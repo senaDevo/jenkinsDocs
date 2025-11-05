@@ -1,0 +1,59 @@
+node {
+    // Define environment variables
+    def APP_NAME = "SimpleApp"
+    def VERSION = "1.0.${env.BUILD_NUMBER}"
+
+    try {
+        stage('Initialize') {
+            echo "Starting the pipeline for ${APP_NAME} version ${VERSION}"
+            sh 'echo "Preparing workspace..."'
+        }
+
+        stage('Build') {
+            echo "Building the application..."
+            sh """
+                mkdir -p build
+                echo "Application: ${APP_NAME}" > build/info.txt
+                echo "Version: ${VERSION}" >> build/info.txt
+                echo "Build completed successfully." >> build/info.txt
+            """
+        }
+
+        stage('Test') {
+            echo "Running tests..."
+            // Simple test: check that the build output file exists
+            sh """
+                if [ -f build/info.txt ]; then
+                    echo "Test passed: build file exists."
+                else
+                    echo "Test failed: build file missing!" && exit 1
+                fi
+            """
+        }
+
+        stage('Deploy') {
+            echo "Deploying version ${VERSION}..."
+            sh """
+                mkdir -p deploy
+                cp build/info.txt deploy/
+                echo "Deployment complete." >> deploy/info.txt
+            """
+        }
+
+        stage('Archive Results') {
+            echo "Archiving build artifacts..."
+            archiveArtifacts artifacts: '**/*.txt', fingerprint: true
+        }
+
+        echo "Build succeeded."
+    }
+    catch (err) {
+        echo "Build failed: ${err}"
+        currentBuild.result = 'FAILURE'
+    }
+    finally {
+        echo "Cleaning up workspace..."
+        deleteDir()
+        echo "Pipeline finished."
+    }
+}
