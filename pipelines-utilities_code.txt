@@ -1,0 +1,31 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Setup Workspace') {
+            steps {
+                writeFile file: 'config.json', text: '{"name": "TrainingApp", "version": "1.0"}'
+            }
+        }
+
+        stage('Read JSON') {
+            steps {
+                script {
+                    def data = readJSON file: 'config.json'
+                    echo "App Name: ${data.name}"
+                    echo "Version: ${data.version}"
+                }
+            }
+        }
+
+        stage('Write and Archive Output') {
+            steps {
+                script {
+                    def output = "Build: ${env.BUILD_NUMBER}, App: ${data.name}, Version: ${data.version}"
+                    writeFile file: 'build-info.txt', text: output
+                    archiveArtifacts artifacts: '*.txt'
+                }
+            }
+        }
+    }
+}
