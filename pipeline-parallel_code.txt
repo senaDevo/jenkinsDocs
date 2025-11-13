@@ -7,7 +7,6 @@ pipeline {
     }
 
     stages {
-
         stage('Initialize') {
             steps {
                 echo "Starting the pipeline for ${APP_NAME} version ${VERSION}"
@@ -27,12 +26,12 @@ pipeline {
             }
         }
 
-        // ✅ Parallel testing stage
         stage('Testing Phase') {
             parallel {
                 stage('Unit Tests') {
                     steps {
                         echo "Running unit tests..."
+														   
                         sh '''
                             if [ -f build/info.txt ]; then
                                 echo "Unit tests passed."
@@ -42,7 +41,6 @@ pipeline {
                         '''
                     }
                 }
-
                 stage('Integration Tests') {
                     steps {
                         echo "Running integration tests..."
@@ -52,7 +50,6 @@ pipeline {
                         '''
                     }
                 }
-
                 stage('Lint & Static Analysis') {
                     steps {
                         echo "Running linting and code quality checks..."
@@ -63,7 +60,7 @@ pipeline {
                 }
             }
         }
-
+        
         stage('Deploy') {
             steps {
                 echo "Deploying version ${VERSION}..."
@@ -89,10 +86,10 @@ pipeline {
             deleteDir()
         }
         success {
-            echo "✅ Build succeeded."
+            echo "Build succeeded."
         }
         failure {
-            echo "❌ Build failed. Check logs for details."
+            echo "Build failed. Check logs for details."
         }
     }
 }
